@@ -4,9 +4,8 @@ import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { layout, text, form, colors, shadows } from "../styles/styles";
 
-import { rtdbCoffee, ordersRef } from "../firebase/coffeeDatabase";
-import { get, ref, push, serverTimestamp } from "firebase/database";
-import { auth } from "../firebase/database";
+import { rtdb, ordersRef, auth } from "../firebase/database";
+import { get, ref, push } from "firebase/database";
 
 export default function Order() {
   const navigation = useNavigation();
@@ -19,7 +18,7 @@ export default function Order() {
   useEffect(() => {
     (async () => {
       try {
-        const snap = await get(ref(rtdbCoffee, `cafes/${cafeId}/menu`));
+        const snap = await get(ref(rtdb, `cafes/${cafeId}/menu`));
         const data = snap.val() || {};
         const list = Object.entries(data).map(([id, v]) => ({
           id,

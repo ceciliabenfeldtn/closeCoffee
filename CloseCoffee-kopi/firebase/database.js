@@ -1,10 +1,13 @@
-// anton
-import { initializeApp } from 'firebase/app';
+// database.js
+
+import { initializeApp, getApps, getApp } from "firebase/app";
 import {
   initializeAuth,
   getReactNativePersistence,
-} from 'firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+  getAuth,
+} from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getDatabase, ref } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD6S74XFOJV07BcWnXOSwatbJOfY6JbY3Y",
@@ -12,13 +15,33 @@ const firebaseConfig = {
   projectId: "cc25-722ca",
   storageBucket: "cc25-722ca.firebasestorage.app",
   messagingSenderId: "150427983183",
-  appId: "1:150427983183:web:0f10d68b72eb7fa5f9393a"
+  appId: "1:150427983183:web:0f10d68b72eb7fa5f9393a",
 };
 
-const app = initializeApp(firebaseConfig);
+// Make sure we only create the app once (important with hot reload)
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+// --- Auth (React Native) ---
+let auth;
+try {
+  // First time: initialize with React Native persistence
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+} catch (e) {
+  // If Auth was already initialized (e.g. hot reload), just get the existing instance
+  auth = getAuth(app);
+}
 
-export { auth };
+// --- Realtime Database ---
+const rtdb = getDatabase(
+  app,
+  "https://cc25-722ca-default-rtdb.europe-west1.firebasedatabase.app/"
+);
+
+// Convenience refs for your data
+const cafesRef = () => ref(rtdb, "cafes");
+const ordersRef = () => ref(rtdb, "orders");
+
+// Exports
+export { app, auth, rtdb, cafesRef, ordersRef };

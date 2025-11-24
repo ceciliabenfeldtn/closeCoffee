@@ -6,7 +6,7 @@ import MapView, { Marker, Callout } from "react-native-maps";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { get } from "firebase/database";
 
-import { cafesRef } from "../firebase/coffeeDatabase";
+import { cafesRef } from "../firebase/database";
 import { colors, layout } from "../styles/styles";
 
 export default function Maps() {
@@ -21,20 +21,25 @@ export default function Maps() {
     longitudeDelta: 0.0421,
   });
 
-  // Hent cafeer 1 gang fra firebase coffeeDatabase
-  const getCafes = async () => {
+  // Hent cafeer 1 gang fra firebase coffeeDatabase - dannet via. chatGpt for at finde fejlkoder
+const getCafes = async () => {
+  try {
     const snap = await get(cafesRef());
+    console.log("cafes exists?", snap.exists());
+    console.log("cafes data:", snap.val());
+
     const data = snap.val() || {};
     const list = Object.entries(data).map(([id, c]) => ({
       id,
       name: c?.name ?? "Ukendt",
       address: c?.address ?? "",
-      latitude: typeof c?.latitude === "string" ? parseFloat(c.latitude) : c?.latitude,
-      longitude: typeof c?.longitude === "string" ? parseFloat(c.longitude) : c?.longitude,
+      latitude:
+        typeof c?.latitude === "string" ? parseFloat(c.latitude) : c?.latitude,
+      longitude:
+        typeof c?.longitude === "string" ? parseFloat(c.longitude) : c?.longitude,
     }));
     setCafes(list);
 
-    // hvis nej til lokation, centrer på sidste/første cafe
     const latest = list.at(-1);
     if (latest && (!region || region.latitude === 56.26392)) {
       setRegion((r) => ({
@@ -43,7 +48,11 @@ export default function Maps() {
         longitude: latest.longitude,
       }));
     }
-  };
+  } catch (e) {
+    console.error("Error loading cafes:", e);
+   
+  }
+};
 
   // hent brugerens lokation 
   const getLocation = async () => {
