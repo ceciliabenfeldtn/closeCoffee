@@ -24,12 +24,10 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 // --- Auth (React Native) ---
 let auth;
 try {
-  // First time: initialize with React Native persistence
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage),
   });
 } catch (e) {
-  // If Auth was already initialized (e.g. hot reload), just get the existing instance
   auth = getAuth(app);
 }
 
@@ -43,5 +41,8 @@ const rtdb = getDatabase(
 const cafesRef = () => ref(rtdb, "cafes");
 const ordersRef = () => ref(rtdb, "orders");
 
-// Exports
-export { app, auth, rtdb, cafesRef, ordersRef };
+// 🔹 NEW: user-specific paths
+const userRef = (uid) => ref(rtdb, `users/${uid}`);
+const userFavoritesRef = (uid) => ref(rtdb, `users/${uid}/favorites`);
+
+export { app, auth, rtdb, cafesRef, ordersRef, userRef, userFavoritesRef };
